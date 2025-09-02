@@ -1,0 +1,65 @@
+.page {
+  min-height: 100vh;
+  padding: 0;
+  background: #fff3fa; /* pink lembut = sama navbar */
+}
+
+.paper {
+  max-width: 900px;
+  margin: 0 auto;
+  background: #fff; /* konten putih */
+  padding: 24px;
+  /* garis kanan */
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.btn {
+  font-size: 14px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  border: none;
+  cursor: pointer;
+}
+
+/* variasi warna tombol */
+.btnPink {
+  background: #fff3fa;
+  color: #555;
+}
+
+.btnDanger {
+  background: #fff3fa;
+  color: red;
+}
+
+.meta {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-bottom: 16px;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.caption {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-top: 6px;
+}
