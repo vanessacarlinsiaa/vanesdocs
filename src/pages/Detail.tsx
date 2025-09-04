@@ -1,22 +1,13 @@
-import { useEffect, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
-import { getDocDb, deleteDocDb } from "../lib/docsRepo";
-import { useAuth } from "../lib/auth";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { getDocDb, deleteDocDb, type DocRow } from "../lib/docsRepo";
 import styles from "./Detail.module.css";
-
-type Doc = {
-  id: string;
-  title: string;
-  tags: string[];
-  content: string;
-  updated_at: string;
-};
+import { useEffect, useState } from "react";
+import AuthOnly from "../components/AuthOnly";
 
 export default function Detail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const user = useAuth();
-  const [doc, setDoc] = useState<Doc | null>(null);
+  const [doc, setDoc] = useState<DocRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
 
@@ -27,9 +18,10 @@ export default function Detail() {
       try {
         setLoading(true);
         const data = await getDocDb(id);
-        if (mounted) setDoc(data ?? null);
+        if (mounted) setDoc(data);
       } catch (e: unknown) {
-        setErr(e instanceof Error ? e.message : String(e));
+        const msg = e instanceof Error ? e.message : String(e);
+        setErr(msg || "Failed to load");
       } finally {
         if (mounted) setLoading(false);
       }
@@ -39,20 +31,33 @@ export default function Detail() {
     };
   }, [id]);
 
+  if (loading) {
+    return (
+      <main className={styles.page}>
+        <div className={styles.paper}>Loading…</div>
+      </main>
+    );
+  }
+
+  if (err || !doc) {
+    return (
+      <main className={styles.page}>
+        <div className={styles.paper}>
+          <p>Document not found.</p>
+          <Link to="/" className={`${styles.btn} ${styles.btnPink}`}>
+            ← Back to list
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
   async function handleDelete() {
     if (!id) return;
     if (!confirm("Delete this document?")) return;
-    try {
-      await deleteDocDb(id);
-      navigate("/");
-    } catch (e: unknown) {
-      alert(e instanceof Error ? e.message : String(e));
-    }
+    await deleteDocDb(id);
+    navigate("/");
   }
-
-  if (loading) return <main style={{ padding: 16 }}>Loading…</main>;
-  if (err) return <main style={{ padding: 16 }}>Error: {err}</main>;
-  if (!doc) return <main style={{ padding: 16 }}>Document not found.</main>;
 
   return (
     <main className={styles.page}>
@@ -61,26 +66,25 @@ export default function Detail() {
           <Link to="/" className={`${styles.btn} ${styles.btnPink}`}>
             ← Back
           </Link>
-          {user && (
-            <>
-              <Link
-                to={`/doc/${doc.id}/edit`}
-                className={`${styles.btn} ${styles.btnPink}`}
-              >
-                Edit
-              </Link>
-              <button
-                onClick={handleDelete}
-                className={`${styles.btn} ${styles.btnDanger}`}
-              >
-                Delete
-              </button>
-            </>
-          )}
+
+          <AuthOnly>
+            <Link
+              to={`/doc/${doc.id}/edit`}
+              className={`${styles.btn} ${styles.btnPink}`}
+            >
+              Edit
+            </Link>
+            <button
+              onClick={handleDelete}
+              className={`${styles.btn} ${styles.btnDanger}`}
+            >
+              Delete
+            </button>
+          </AuthOnly>
         </div>
 
-        <h1 style={{ margin: "8px 0" }}>{doc.title}</h1>
-        <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 16 }}>
+        <h1 style={{ margin: "8px 0 4px" }}>{doc.title}</h1>
+        <div className={styles.meta}>
           {doc.tags.join(" • ")} • Updated{" "}
           {new Date(doc.updated_at).toLocaleDateString()}
         </div>

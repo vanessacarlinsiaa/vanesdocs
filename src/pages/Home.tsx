@@ -1,21 +1,17 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { listDocs } from "../lib/docsRepo";
-import { useAuth } from "../lib/auth";
-
-type Doc = {
-  id: string;
-  title: string;
-  tags: string[];
-  content: string;
-  updated_at: string;
-};
+import { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import Fuse from "fuse.js";
+import { listDocs, type DocRow } from "../lib/docsRepo";
+import { extractPreview } from "../lib/extractPreview";
+import AuthOnly from "../components/AuthOnly";
 
 export default function Home() {
-  const [docs, setDocs] = useState<Doc[]>([]);
+  const [params] = useSearchParams();
+  const q = params.get("q") ?? "";
+
+  const [docs, setDocs] = useState<DocRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
-  const user = useAuth();
 
   useEffect(() => {
     let mounted = true;
@@ -25,7 +21,8 @@ export default function Home() {
         const data = await listDocs();
         if (mounted) setDocs(data);
       } catch (e: unknown) {
-        setErr(e instanceof Error ? e.message : String(e));
+        const msg = e instanceof Error ? e.message : String(e);
+        setErr(msg || "Failed to load documents");
       } finally {
         if (mounted) setLoading(false);
       }
@@ -35,44 +32,80 @@ export default function Home() {
     };
   }, []);
 
+  const results = useMemo(() => {
+    if (!q.trim()) return docs;
+    const withSearchText = docs.map((d) => ({
+      ...d,
+      searchText: (
+        new DOMParser().parseFromString(d.content, "text/html").body
+          .textContent || ""
+      ).trim(),
+    }));
+    const fuse = new Fuse(withSearchText, {
+      keys: ["title", "tags", "searchText"],
+      threshold: 0.3,
+      ignoreLocation: true,
+    });
+    return fuse.search(q).map((r) => r.item);
+  }, [q, docs]);
+
   if (loading) return <main style={{ padding: 16 }}>Loading…</main>;
   if (err) return <main style={{ padding: 16 }}>Error: {err}</main>;
 
   return (
-    <main style={{ padding: 16, maxWidth: 900, margin: "0 auto" }}>
-      <h2>Latest Documents</h2>
-      {docs.length === 0 && <p>No documents yet.</p>}
-      <ul style={{ listStyle: "none", padding: 0 }}>
-        {docs.map((doc) => (
+    <main style={{ padding: "16px", maxWidth: 900, margin: "0 auto" }}>
+      {q ? (
+        <p style={{ margin: "6px 0 12px" }}>
+          Result for: <strong>{q}</strong> • {results.length} document
+        </p>
+      ) : (
+        <p
+          style={{
+            margin: "6px 0 12px",
+            opacity: 0.8,
+            fontSize: "30px",
+            fontWeight: "800",
+          }}
+        >
+          Newest Document
+        </p>
+      )}
+
+      <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+        {results.map((d) => (
           <li
-            key={doc.id}
-            style={{
-              marginBottom: 16,
-              borderBottom: "1px solid #eee",
-              paddingBottom: 12,
-            }}
+            key={d.id}
+            style={{ padding: "14px 0", borderBottom: "1px solid #eee" }}
           >
             <Link
-              to={`/doc/${doc.id}`}
-              style={{ fontSize: 18, fontWeight: 600, textDecoration: "none" }}
+              to={`/doc/${d.id}`}
+              style={{
+                fontWeight: 700,
+                fontSize: "18px",
+                textDecoration: "none",
+                color: "#111",
+              }}
             >
-              {doc.title}
+              {d.title}
             </Link>
-            <div style={{ fontSize: 12, opacity: 0.7 }}>
-              {doc.tags.join(" • ")} • Updated{" "}
-              {new Date(doc.updated_at).toLocaleDateString()}
+            <div style={{ fontSize: 10, opacity: 0.7, marginTop: 6 }}>
+              {d.tags.join(" • ")} • Updated{" "}
+              {new Date(d.updated_at).toLocaleDateString()}
+              <AuthOnly>
+                {" • "}
+                <Link to={`/doc/${d.id}/edit`} style={{ fontSize: 12 }}>
+                  Edit
+                </Link>
+              </AuthOnly>
             </div>
-            {/* edit hanya muncul kalau login */}
-            {user && (
-              <Link
-                to={`/doc/${doc.id}/edit`}
-                style={{ fontSize: 12, color: "purple", marginLeft: 8 }}
-              >
-                Edit
-              </Link>
-            )}
+            <p style={{ margin: "8px 0 0", opacity: 0.9 }}>
+              {extractPreview(d.content, 160)}
+            </p>
           </li>
         ))}
+        {results.length === 0 && (
+          <li style={{ padding: "16px 0" }}>Document not found.</li>
+        )}
       </ul>
     </main>
   );

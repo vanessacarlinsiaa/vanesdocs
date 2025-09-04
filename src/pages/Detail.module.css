@@ -1,13 +1,13 @@
 .page {
   min-height: 100vh;
   padding: 0;
-  background: #fff3fa; /* pink lembut = sama navbar */
+  background: #fff3fa;
 }
 
 .paper {
   max-width: 900px;
   margin: 0 auto;
-  background: #fff; /* konten putih */
+  background: #fff;
   padding: 24px;
   /* garis kanan */
 }
@@ -29,7 +29,6 @@
   cursor: pointer;
 }
 
-/* variasi warna tombol */
 .btnPink {
   background: #fff3fa;
   color: #555;
