@@ -5,7 +5,6 @@ import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
 import styles from "./RichEditor.module.css";
 
-// helper: file -> data URL
 function fileToDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
     const fr = new FileReader();
@@ -42,7 +41,6 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
     onCreate: ({ editor }) => onChange(editor.getHTML()),
     editorProps: {
       attributes: { class: styles.prose },
-      // paste image dari clipboard
       handlePaste: (_view, event) => {
         const files = event.clipboardData?.files;
         if (!files || !files.length) return false;
@@ -59,7 +57,7 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
         });
         return true;
       },
-      // drag & drop image
+
       handleDrop: (_view, event) => {
         const files = event.dataTransfer?.files;
         if (!files || !files.length) return false;
@@ -79,7 +77,6 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
     },
   });
 
-  // Listener slash di level dokumen (bukan editor.view.dom)
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "/") setSlashOpen(true);
@@ -181,10 +178,9 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
         />
       </div>
 
-      {/* Area editor */}
       <div className={styles.editorBox}>
         <EditorContent editor={editor} />
-        {/* Slash menu sederhana */}
+
         {slashOpen && (
           <div
             className={styles.slashMenu}
