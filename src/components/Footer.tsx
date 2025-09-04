@@ -11,7 +11,6 @@ export default function Footer() {
         className={styles.githubLink}
         aria-label="GitHub"
       >
-        {/* GitHub mark (SVG inline) */}
         <svg
           viewBox="0 0 16 16"
           aria-hidden="true"

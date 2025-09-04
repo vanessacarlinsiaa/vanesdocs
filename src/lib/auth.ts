@@ -27,9 +27,10 @@ export function useAuth() {
 }
 
 export async function loginWithGoogle() {
+  const redirectTo = window.location.origin; // production/dev otomatis
   await supa.auth.signInWithOAuth({
     provider: "google",
-    options: { redirectTo: window.location.origin }, // balik ke app (lokal / vercel)
+    options: { redirectTo }, // atau boleh dihapus, maka pakai Site URL
   });
 }
 
