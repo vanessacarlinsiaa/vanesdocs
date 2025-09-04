@@ -27,10 +27,10 @@ export function useAuth() {
 }
 
 export async function loginWithGoogle() {
-  const redirectTo = window.location.origin; // production/dev otomatis
+  const redirectTo = window.location.origin;
   await supa.auth.signInWithOAuth({
     provider: "google",
-    options: { redirectTo }, // atau boleh dihapus, maka pakai Site URL
+    options: { redirectTo },
   });
 }
 
