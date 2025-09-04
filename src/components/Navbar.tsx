@@ -1,11 +1,21 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth, loginWithGoogle, logout } from "../lib/auth";
+import { useEffect, useRef, useState } from "react";
 import styles from "./Navbar.module.css";
 
+type AuthUser = {
+  displayName?: string;
+  name?: string;
+  email?: string;
+  photoURL?: string;
+};
+
 export default function Navbar() {
-  const user = useAuth();
+  const user = useAuth() as AuthUser | null;
   const nav = useNavigate();
   const loc = useLocation();
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   function onSearch(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -16,80 +26,88 @@ export default function Navbar() {
     nav({ pathname: "/", search: params.toString() });
   }
 
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (!menuRef.current) return;
+      if (!menuRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, []);
+
+  // ambil nama, email, inisial
+  const displayName =
+    user?.displayName ||
+    user?.name ||
+    (user?.email ? user.email.split("@")[0] : "User");
+
+  const email = user?.email ?? "";
+
+  const initials = (displayName || "U")
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((s) => s[0]?.toUpperCase())
+    .join("");
+
   return (
-    <header
-      style={{
-        position: "sticky",
-        top: 0,
-        zIndex: 10,
-        background: "#fff3fa",
-        boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: 1100,
-          margin: "0 auto",
-          padding: "10px 16px",
-          display: "grid",
-          gridTemplateColumns: "220px 1fr",
-          alignItems: "center",
-          gap: 12,
-        }}
-      >
-        <Link
-          to="/"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            textDecoration: "none",
-            color: "#111",
-          }}
-        >
-          <img
-            src="/logoVanes.png"
-            alt="Logo"
-            style={{ width: 100, height: 60, objectFit: "contain" }}
-          />
+    <header className={styles.header}>
+      <div className={styles.inner}>
+        {/* kiri: logo */}
+        <Link to="/" className={styles.logoLink}>
+          <img src="/logoVanes.png" alt="Logo" className={styles.logo} />
         </Link>
 
-        <div
-          style={{
-            display: "flex",
-            gap: 12,
-            alignItems: "center",
-            justifyContent: "flex-end",
-          }}
-        >
-          <form onSubmit={onSearch} style={{ display: "flex" }}>
+        {/* kanan: search + actions */}
+        <div className={styles.actions}>
+          <form onSubmit={onSearch} className={styles.searchForm}>
             <input
               name="q"
               defaultValue={new URLSearchParams(loc.search).get("q") ?? ""}
               placeholder="Search documents..."
-              style={{
-                width: 250,
-                padding: "10px 14px",
-                borderRadius: 8,
-                border: "1px solid #ead3de",
-                outline: "none",
-                background: "#fff",
-              }}
+              className={styles.searchInput}
             />
           </form>
 
           {user ? (
             <>
-              <span style={{ fontSize: 14, fontWeight: 500 }}>
-                Hello Vanes!
-              </span>
-
               <Link to="/doc/new" className={styles.btnNew}>
                 + New
               </Link>
-              <button onClick={logout} className={styles.btnDark}>
-                Logout
-              </button>
+
+              {/* Avatar + Dropdown */}
+              <div ref={menuRef} className={styles.avatarWrapper}>
+                <button
+                  onClick={() => setOpen((s) => !s)}
+                  className={styles.avatarBtn}
+                >
+                  {initials}
+                </button>
+
+                {open && (
+                  <div className={styles.dropdown}>
+                    <div className={styles.dropdownHeader}>
+                      <div className={styles.dropdownAvatar}>{initials}</div>
+                      <div className={styles.dropdownInfo}>
+                        <div className={styles.name} title={displayName}>
+                          {displayName}
+                        </div>
+                        <div className={styles.email} title={email}>
+                          {email}
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setOpen(false);
+                        logout();
+                      }}
+                      className={styles.logoutBtn}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
             </>
           ) : (
             <button onClick={loginWithGoogle} className={styles.btnPink}>

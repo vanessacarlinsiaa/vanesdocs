@@ -85,3 +85,135 @@
 .btnDark:hover {
   background: #333;
 }
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #fff3fa;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 10px 16px;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+.logoLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: #111;
+}
+
+.logo {
+  width: 100px;
+  height: 60px;
+  object-fit: contain;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.searchForm {
+  display: flex;
+}
+
+.searchInput {
+  width: 250px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #ead3de;
+  outline: none;
+  background: #fff;
+}
+
+.avatarWrapper {
+  position: relative;
+}
+
+.avatarBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 0.5px solid #ffc1e5;
+  background: #ffc1e5;
+  color: #fff;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.dropdown {
+  position: absolute;
+  right: 0;
+  margin-top: 8px;
+  background: #fff;
+  border: 1px solid #f1d7e1;
+  border-radius: 10px;
+  min-width: 230px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+  padding: 10px;
+}
+
+.dropdownHeader {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 6px 10px;
+  border-bottom: 1px solid #f3e5ea;
+}
+
+.dropdownAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #ffc1e5;
+  color: #fff;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+
+.dropdownInfo {
+  min-width: 0;
+}
+
+.name {
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.email {
+  font-size: 12px;
+  opacity: 0.75;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.logoutBtn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ffc1e5;
+  background: #ffc1e5;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
