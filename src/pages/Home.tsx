@@ -1,71 +1,78 @@
-import { useMemo } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import Fuse from "fuse.js";
-import { getAllDocs } from "../lib/docsStore";
-import { extractPreview } from "../lib/extractPreview";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { listDocs } from "../lib/docsRepo";
+import { useAuth } from "../lib/auth";
+
+type Doc = {
+  id: string;
+  title: string;
+  tags: string[];
+  content: string;
+  updated_at: string;
+};
 
 export default function Home() {
-  const [params] = useSearchParams();
-  const q = params.get("q") ?? "";
-  const all = getAllDocs(); // baca setiap render; cukup untuk SPA kecil
+  const [docs, setDocs] = useState<Doc[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
+  const user = useAuth();
 
-  const results = useMemo(() => {
-    if (!q.trim()) return all;
-    const fuse = new Fuse(all, {
-      keys: ["title", "tags", "content"],
-      threshold: 0.3,
-      ignoreLocation: true,
-    });
-    return fuse.search(q).map((r) => r.item);
-  }, [q, all]);
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setLoading(true);
+        const data = await listDocs();
+        if (mounted) setDocs(data);
+      } catch (e: unknown) {
+        setErr(e instanceof Error ? e.message : String(e));
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  if (loading) return <main style={{ padding: 16 }}>Loading…</main>;
+  if (err) return <main style={{ padding: 16 }}>Error: {err}</main>;
 
   return (
-    <main style={{ padding: "16px", maxWidth: 900, margin: "0 auto" }}>
-      {q ? (
-        <p style={{ margin: "6px 0 12px" }}>
-          Result for: <strong>{q}</strong> • {results.length} document
-        </p>
-      ) : (
-        <p
-          style={{
-            margin: "6px 0 12px",
-            opacity: 0.8,
-            fontSize: "40px",
-            fontWeight: "900",
-          }}
-        >
-          Newest Document
-        </p>
-      )}
-
-      <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-        {results.map((d) => (
+    <main style={{ padding: 16, maxWidth: 900, margin: "0 auto" }}>
+      <h2>Latest Documents</h2>
+      {docs.length === 0 && <p>No documents yet.</p>}
+      <ul style={{ listStyle: "none", padding: 0 }}>
+        {docs.map((doc) => (
           <li
-            key={d.id}
-            style={{ padding: "14px 0", borderBottom: "1px solid #eee" }}
+            key={doc.id}
+            style={{
+              marginBottom: 16,
+              borderBottom: "1px solid #eee",
+              paddingBottom: 12,
+            }}
           >
             <Link
-              to={`/doc/${d.id}`}
-              style={{ fontWeight: 700, textDecoration: "none", color: "#111" }}
+              to={`/doc/${doc.id}`}
+              style={{ fontSize: 18, fontWeight: 600, textDecoration: "none" }}
             >
-              {d.title}
+              {doc.title}
             </Link>
-            <div style={{ fontSize: 12, opacity: 0.7, marginTop: 6 }}>
-              {d.tags.join(" • ")} • Updated{" "}
-              {new Date(d.updatedAt).toLocaleDateString()}
-              {"  "}•{" "}
-              <Link to={`/doc/${d.id}/edit`} style={{ fontSize: 12 }}>
+            <div style={{ fontSize: 12, opacity: 0.7 }}>
+              {doc.tags.join(" • ")} • Updated{" "}
+              {new Date(doc.updated_at).toLocaleDateString()}
+            </div>
+            {/* edit hanya muncul kalau login */}
+            {user && (
+              <Link
+                to={`/doc/${doc.id}/edit`}
+                style={{ fontSize: 12, color: "purple", marginLeft: 8 }}
+              >
                 Edit
               </Link>
-            </div>
-            <p style={{ margin: "8px 0 0", opacity: 0.9 }}>
-              {extractPreview(d.content, 160)}
-            </p>
+            )}
           </li>
         ))}
-        {results.length === 0 && (
-          <li style={{ padding: "16px 0" }}>Document not found.</li>
-        )}
       </ul>
     </main>
   );

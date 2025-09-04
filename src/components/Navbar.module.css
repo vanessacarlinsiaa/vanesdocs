@@ -42,3 +42,46 @@
 .newBtn:hover {
   opacity: 0.9;
 }
+
+.btnNew {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background: #ffc1e5;
+  color: #555;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.btnNew:hover {
+  background: #ff9fd6;
+}
+
+.btnPink {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background: #ffc1e5;
+  color: #555;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btnPink:hover {
+  background: #ff9fd6; /* lebih gelap sedikit */
+}
+
+.btnDark {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background: #555;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btnDark:hover {
+  background: #333;
+}
