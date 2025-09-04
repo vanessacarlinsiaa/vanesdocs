@@ -4,7 +4,11 @@
   padding: 2rem;
   text-align: center;
 }
-
+body {
+  margin: 0;
+  padding-top: 80px;
+  font-family: "Montserrat", sans-serif;
+}
 .logo {
   height: 6em;
   padding: 1.5em;

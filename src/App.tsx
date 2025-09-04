@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import Detail from "./pages/Detail";
 import AddEdit from "./pages/AddEdit";
 import { RequireAuth } from "./routes/RequireAuth";
+import Footer from "./components/Footer";
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
           }
         />
       </Routes>
+      <Footer />
     </Router>
   );
 }

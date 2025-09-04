@@ -35,14 +35,11 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
 
-  // ambil nama, email, inisial
   const displayName =
     user?.displayName ||
     user?.name ||
     (user?.email ? user.email.split("@")[0] : "User");
-
   const email = user?.email ?? "";
-
   const initials = (displayName || "U")
     .split(/\s+/)
     .slice(0, 2)
@@ -74,11 +71,12 @@ export default function Navbar() {
                 + New
               </Link>
 
-              {/* Avatar + Dropdown */}
               <div ref={menuRef} className={styles.avatarWrapper}>
                 <button
+                  type="button"
                   onClick={() => setOpen((s) => !s)}
                   className={styles.avatarBtn}
+                  aria-label="Open profile menu"
                 >
                   {initials}
                 </button>
@@ -97,6 +95,7 @@ export default function Navbar() {
                       </div>
                     </div>
                     <button
+                      type="button"
                       onClick={() => {
                         setOpen(false);
                         logout();
