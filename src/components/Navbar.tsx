@@ -54,7 +54,6 @@ export default function Navbar() {
           <img src="/logoVanes.png" alt="Logo" className={styles.logo} />
         </Link>
 
-        {/* kanan: search + actions */}
         <div className={styles.actions}>
           <form onSubmit={onSearch} className={styles.searchForm}>
             <input
