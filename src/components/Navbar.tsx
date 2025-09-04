@@ -37,7 +37,6 @@ export default function Navbar() {
           gap: 12,
         }}
       >
-        {/* kiri: logo */}
         <Link
           to="/"
           style={{
@@ -55,7 +54,6 @@ export default function Navbar() {
           />
         </Link>
 
-        {/* kanan: search + actions */}
         <div
           style={{
             display: "flex",
@@ -64,7 +62,6 @@ export default function Navbar() {
             justifyContent: "flex-end",
           }}
         >
-          {/* search */}
           <form onSubmit={onSearch} style={{ display: "flex" }}>
             <input
               name="q"
@@ -81,7 +78,6 @@ export default function Navbar() {
             />
           </form>
 
-          {/* actions */}
           {user ? (
             <>
               <span style={{ fontSize: 14, fontWeight: 500 }}>
