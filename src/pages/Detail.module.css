@@ -92,3 +92,14 @@
   background: #fff0f6;
   color: #444;
 }
+
+@media (max-width: 640px) {
+  .paper {
+    padding: 16px;
+    margin: 0 8px;
+  }
+
+  .actions {
+    flex-wrap: wrap;
+  }
+}

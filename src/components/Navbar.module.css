@@ -173,3 +173,72 @@
   cursor: pointer;
   font-weight: 600;
 }
+
+/* ====== Responsive: ≤ 900px ====== */
+@media (max-width: 900px) {
+  .inner {
+    max-width: 100%;
+    grid-template-columns: 160px 1fr;
+    padding: 8px 12px;
+    gap: 10px;
+  }
+
+  .logo {
+    width: 80px;
+    height: 48px;
+  }
+
+  .searchInput {
+    width: 100%;
+    max-width: 360px;
+  }
+}
+
+/* ====== Responsive: ≤ 640px (HP) ====== */
+@media (max-width: 640px) {
+  .inner {
+    grid-template-columns: 1fr; /* logo di atas, controls di bawah */
+    row-gap: 10px;
+    padding: 8px 12px;
+  }
+
+  .logoLink {
+    justify-content: center;
+  }
+
+  .actions {
+    justify-content: center; /* ratain tengah biar rapi */
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .searchForm {
+    width: 100%;
+    order: 1; /* search paling atas di section actions */
+  }
+
+  .searchInput {
+    width: 100%;
+    max-width: none;
+    padding: 10px 12px;
+  }
+
+  .btnNew,
+  .btnPink,
+  .btnDark {
+    padding: 8px 12px;
+    border-radius: 8px;
+  }
+
+  .avatarBtn {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  .dropdown {
+    right: 50%;
+    transform: translateX(50%); /* pop-upnya center di HP */
+    min-width: 220px;
+  }
+}

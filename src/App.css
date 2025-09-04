@@ -44,3 +44,9 @@ body {
 .read-the-docs {
   color: #888;
 }
+
+@media (max-width: 640px) {
+  body {
+    padding-top: 64px;
+  } /* navbar dipendekin di HP */
+}
