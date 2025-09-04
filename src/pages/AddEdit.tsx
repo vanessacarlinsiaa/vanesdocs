@@ -38,7 +38,6 @@ export default function AddEdit() {
   useEffect(() => {
     let mounted = true;
 
-    // kalau route /doc/new → jangan fetch apa2
     if (!editing || !id) {
       setLoading(false);
       return () => {
@@ -124,60 +123,36 @@ export default function AddEdit() {
           </Link>
         </div>
 
-        <h1 style={{ margin: "8px 0" }}>
+        <h1 className={styles.title}>
           {editing ? "Edit Document" : "New Document"}
         </h1>
 
-        <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
-          <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 13, opacity: 0.8 }}>Title</span>
+        <form onSubmit={onSubmit} className={styles.form}>
+          <label className={styles.label}>
+            <span>Title</span>
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Input title..."
               required
-              style={{
-                padding: "10px 12px",
-                border: "1px solid #ddd",
-                borderRadius: 8,
-                outline: "none",
-              }}
+              className={styles.input}
             />
           </label>
 
-          <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 13, opacity: 0.8 }}>
-              Tags (separate with commas)
-            </span>
+          <label className={styles.label}>
+            <span>Tags (separate with commas)</span>
             <input
               value={tags}
               onChange={(e) => setTags(e.target.value)}
               placeholder="Healthcheck, Dynatrace…"
-              style={{
-                padding: "10px 12px",
-                border: "1px solid #ddd",
-                borderRadius: 8,
-                outline: "none",
-              }}
+              className={styles.input}
             />
           </label>
 
-          <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 13, opacity: 0.8 }}>
-              Document Contents
-            </span>
+          <label className={styles.label}>
+            <span>Document Contents</span>
             {!editorReady ? (
-              <div
-                style={{
-                  padding: 12,
-                  border: "1px solid #eee",
-                  borderRadius: 8,
-                  background: "#fff0f6",
-                  color: "#444",
-                }}
-              >
-                Loading editor…
-              </div>
+              <div className={styles.editorLoading}>Loading editor…</div>
             ) : (
               <RichEditor
                 initialHTML={content}
