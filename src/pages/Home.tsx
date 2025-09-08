@@ -34,13 +34,17 @@ export default function Home() {
 
   const results = useMemo(() => {
     if (!q.trim()) return docs;
+
     const withSearchText = docs.map((d) => ({
       ...d,
-      searchText: (
-        new DOMParser().parseFromString(d.content, "text/html").body
-          .textContent || ""
-      ).trim(),
+      searchText: d.locked
+        ? ""
+        : (
+            new DOMParser().parseFromString(d.content, "text/html").body
+              .textContent || ""
+          ).trim(),
     }));
+
     const fuse = new Fuse(withSearchText, {
       keys: ["title", "tags", "searchText"],
       threshold: 0.3,
@@ -86,8 +90,9 @@ export default function Home() {
                 color: "#111",
               }}
             >
-              {d.title}
+              {d.title} {d.locked && "🔒"}
             </Link>
+
             <div style={{ fontSize: 10, opacity: 0.7, marginTop: 6 }}>
               {d.tags.join(" • ")} • Updated{" "}
               {new Date(d.updated_at).toLocaleDateString()}
@@ -98,11 +103,13 @@ export default function Home() {
                 </Link>
               </AuthOnly>
             </div>
+
             <p style={{ margin: "8px 0 0", opacity: 0.9 }}>
-              {extractPreview(d.content, 160)}
+              {d.locked ? "🔒 Locked document" : extractPreview(d.content, 160)}
             </p>
           </li>
         ))}
+
         {results.length === 0 && (
           <li style={{ padding: "16px 0" }}>Document not found.</li>
         )}
