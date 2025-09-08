@@ -61,7 +61,7 @@ export default function Detail() {
       setTryPass("");
       setUnlockErr(null);
     } else {
-      setUnlockErr("Password salah.");
+      setUnlockErr("Wrong Password, Please try again.");
     }
   }
 
