@@ -26,7 +26,7 @@ export async function listDocs(): Promise<DocRow[]> {
     )
     .order("updated_at", { ascending: false, nullsFirst: false });
 
-  if (error) throw error;
+  if (error) throw new Error(error.message);
   return (data as DocRow[]) ?? [];
 }
 
@@ -39,7 +39,7 @@ export async function getDocDb(id: string): Promise<DocRow | null> {
     .eq("id", id)
     .maybeSingle();
 
-  if (error) throw error;
+  if (error) throw new Error(error.message);
   return (data as DocRow) ?? null;
 }
 
@@ -53,10 +53,10 @@ export async function upsertDocDb(row: DocUpsert): Promise<void> {
   };
 
   const { error } = await supa.from("documents").upsert(payload);
-  if (error) throw error;
+  if (error) throw new Error(error.message);
 }
 
 export async function deleteDocDb(id: string): Promise<void> {
   const { error } = await supa.from("documents").delete().eq("id", id);
-  if (error) throw error;
+  if (error) throw new Error(error.message);
 }
