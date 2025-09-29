@@ -17,15 +17,6 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  function onSearch(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const q = new FormData(e.currentTarget).get("q")?.toString().trim() ?? "";
-    const params = new URLSearchParams(loc.search);
-    if (q) params.set("q", q);
-    else params.delete("q");
-    nav({ pathname: "/", search: params.toString() });
-  }
-
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
       if (!menuRef.current) return;
@@ -46,24 +37,48 @@ export default function Navbar() {
     .map((s) => s[0]?.toUpperCase())
     .join("");
 
+  const [search, setSearch] = useState(
+    new URLSearchParams(loc.search).get("q") ?? ""
+  );
+
+  useEffect(() => {
+    setSearch(new URLSearchParams(loc.search).get("q") ?? "");
+  }, [loc.search]);
+
+  const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = e.target.value;
+
+    setSearch(v);
+
+    if (v.trim().length) {
+      const params = new URLSearchParams(loc.search);
+      params.set("q", v);
+      nav({ pathname: "/", search: params.toString() });
+    } else {
+      nav("/", { replace: false });
+    }
+  };
+  const onSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+  };
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
-        {/* kiri: logo */}
         <Link to="/" className={styles.logoLink}>
           <img src="/logoVanes.png" alt="Logo" className={styles.logo} />
         </Link>
 
         <div className={styles.actions}>
-          <form onSubmit={onSearch} className={styles.searchForm}>
+          <form onSubmit={onSearchSubmit} className={styles.searchForm}>
             <input
+              type="search"
               name="q"
-              defaultValue={new URLSearchParams(loc.search).get("q") ?? ""}
+              value={search}
+              onChange={onSearchChange}
               placeholder="Search documents..."
               className={styles.searchInput}
             />
           </form>
-
           {user ? (
             <>
               <Link to="/doc/new" className={styles.btnNew}>
