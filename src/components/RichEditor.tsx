@@ -4,15 +4,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
 import styles from "./RichEditor.module.css";
-
-function fileToDataUrl(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const fr = new FileReader();
-    fr.onload = () => resolve(String(fr.result));
-    fr.onerror = reject;
-    fr.readAsDataURL(file);
-  });
-}
+import { uploadImageToSupabase } from "../lib/uploadImage";
 
 type Props = {
   initialHTML: string;
@@ -22,12 +14,13 @@ type Props = {
 export default function RichEditor({ initialHTML, onChange }: Props) {
   const [slashOpen, setSlashOpen] = useState(false);
   const hiddenFile = useRef<HTMLInputElement>(null);
+  const syncingRef = useRef(false);
 
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
       Image.configure({
-        inline: true,
+        inline: false,
         HTMLAttributes: { style: "max-width:100%;height:auto;" },
       }),
       Placeholder.configure({
@@ -37,8 +30,10 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
     ],
     content: initialHTML || "<p></p>",
     autofocus: "end",
-    onUpdate: ({ editor }) => onChange(editor.getHTML()),
-    onCreate: ({ editor }) => onChange(editor.getHTML()),
+    onUpdate: ({ editor }) => {
+      if (syncingRef.current) return;
+      onChange(editor.getHTML());
+    },
     editorProps: {
       attributes: { class: styles.prose },
       handlePaste: (_view, event) => {
@@ -48,16 +43,10 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
           f.type.startsWith("image/")
         );
         if (!images.length) return false;
-
         event.preventDefault();
-        Promise.all(images.map(fileToDataUrl)).then((urls) => {
-          urls.forEach((src) =>
-            editor?.chain().focus().setImage({ src }).run()
-          );
-        });
+        void handleFilesToImage(images);
         return true;
       },
-
       handleDrop: (_view, event) => {
         const files = event.dataTransfer?.files;
         if (!files || !files.length) return false;
@@ -65,26 +54,33 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
           f.type.startsWith("image/")
         );
         if (!images.length) return false;
-
         event.preventDefault();
-        Promise.all(images.map(fileToDataUrl)).then((urls) => {
-          urls.forEach((src) =>
-            editor?.chain().focus().setImage({ src }).run()
-          );
-        });
+        void handleFilesToImage(images);
         return true;
       },
     },
   });
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "/") setSlashOpen(true);
-      if (e.key === "Escape") setSlashOpen(false);
-    };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, []);
+    if (!editor) return;
+    const current = editor.getHTML();
+    const incoming = initialHTML || "<p></p>";
+    if (incoming !== current) {
+      syncingRef.current = true;
+      editor.commands.setContent(incoming, { emitUpdate: false });
+      Promise.resolve().then(() => {
+        syncingRef.current = false;
+      });
+    }
+  }, [initialHTML, editor]);
+
+  async function handleFilesToImage(files: File[] | FileList) {
+    const imgs = Array.from(files).filter((f) => f.type.startsWith("image/"));
+    for (const file of imgs) {
+      const url = await uploadImageToSupabase(file);
+      editor?.chain().focus().setImage({ src: url }).run();
+    }
+  }
 
   function insertImageFromPicker() {
     const input = hiddenFile.current;
@@ -94,12 +90,10 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
   }
 
   async function onPickedFiles(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = e.target.files;
-    if (!files || !files.length) return;
-    const imgs = Array.from(files).filter((f) => f.type.startsWith("image/"));
-    const urls = await Promise.all(imgs.map(fileToDataUrl));
-    urls.forEach((src) => editor?.chain().focus().setImage({ src }).run());
-    setSlashOpen(false);
+    if (e.target.files && e.target.files.length) {
+      await handleFilesToImage(e.target.files);
+      setSlashOpen(false);
+    }
   }
 
   function runThenClose(fn: () => void) {
@@ -110,7 +104,6 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
 
   return (
     <div className={styles.wrapper}>
-      {/* Toolbar sederhana */}
       <div className={styles.toolbar}>
         <button
           onClick={() => editor?.chain().focus().toggleBold().run()}
@@ -233,16 +226,6 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
               }
             >
               Numbered List
-            </div>
-            <div
-              className={styles.item}
-              onClick={() =>
-                runThenClose(() =>
-                  editor?.chain().focus().toggleCodeBlock().run()
-                )
-              }
-            >
-              Code Block
             </div>
             <div className={styles.item} onClick={insertImageFromPicker}>
               Insert Image…

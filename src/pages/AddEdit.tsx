@@ -219,13 +219,13 @@ export default function AddEdit() {
               <div className={styles.editorLoading}>Loading editor…</div>
             ) : (
               <RichEditor
-                initialHTML={content}
+                key={id || "new"}
+                initialHTML={loadedDoc?.content || ""}
                 onChange={(html) => setContent(html)}
               />
             )}
           </label>
 
-          {/* ===== Lock section ===== */}
           <div style={{ borderTop: "1px solid #eee", paddingTop: 12 }}>
             <label
               className={styles.label}
