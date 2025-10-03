@@ -1,13 +1,23 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getDocDb, deleteDocDb, type DocRow } from "../lib/docsRepo";
 import styles from "./Detail.module.css";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import AuthOnly from "../components/AuthOnly";
 import { sha256 } from "../lib/hash";
+import FilePreviewModal from "../components/FilePreviewModal";
+
+function isFileLink(el: HTMLAnchorElement) {
+  if (el.dataset.vdFile === "1") return true;
+
+  return /\.(pdf|docx?|xlsx?|pptx?|csv|txt|md|png|jpe?g|gif|webp|bmp|svg)(\?.*)?$/i.test(
+    el.href
+  );
+}
 
 export default function Detail() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [doc, setDoc] = useState<DocRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
@@ -20,6 +30,11 @@ export default function Detail() {
     sessionStorage.getItem(`unlock:${id}`) === "1";
   const markUnlocked = (id: string) =>
     sessionStorage.setItem(`unlock:${id}`, "1");
+
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewName, setPreviewName] = useState<string | null>(null);
+  const [previewMime, setPreviewMime] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -65,6 +80,19 @@ export default function Detail() {
     }
   }
 
+  const onClickContent = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    const a = target.closest("a") as HTMLAnchorElement | null;
+    if (!a) return;
+    if (!isFileLink(a)) return;
+
+    e.preventDefault();
+    setPreviewUrl(a.href);
+    setPreviewName(a.textContent || a.href);
+    setPreviewMime(null);
+    setPreviewOpen(true);
+  }, []);
+
   if (loading) {
     return (
       <main className={styles.page}>
@@ -94,7 +122,6 @@ export default function Detail() {
             ← Back
           </Link>
 
-          {/* Edit/Delete hanya muncul kalau login DAN dokumen sudah unlock */}
           <AuthOnly>
             {(!doc.locked || unlocked) && (
               <>
@@ -123,7 +150,7 @@ export default function Detail() {
           {new Date(doc.updated_at).toLocaleDateString()}
         </div>
 
-        {/* Kalau dokumen locked dan belum unlock → tampilkan form unlock */}
+        {/* Lock gate */}
         {doc.locked && !unlocked ? (
           <div style={{ marginTop: 20 }}>
             <h2>🔒 This document is locked</h2>
@@ -150,10 +177,22 @@ export default function Detail() {
             </form>
           </div>
         ) : (
-          <article
-            style={{ lineHeight: 1.7, marginTop: 16 }}
-            dangerouslySetInnerHTML={{ __html: doc.content }}
-          />
+          <>
+            <div
+              className={styles.content}
+              style={{ lineHeight: 1.7, marginTop: 16 }}
+              onClick={onClickContent}
+              dangerouslySetInnerHTML={{ __html: doc.content }}
+            />
+
+            <FilePreviewModal
+              open={previewOpen}
+              url={previewUrl}
+              name={previewName}
+              mime={previewMime}
+              onClose={() => setPreviewOpen(false)}
+            />
+          </>
         )}
       </div>
     </main>

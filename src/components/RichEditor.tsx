@@ -12,12 +12,9 @@ type Props = {
   onChange: (html: string) => void;
 };
 
-// ===== Marker & replacer =====
-// Marker tak terlihat (U+2063) → tidak terlihat oleh user tapi bisa diketemukan.
 const ZW = "\u2063";
 const makeMarker = (id: string) => `${ZW}${id}${ZW}`;
 
-/** Ganti <p> yang mengandung marker dengan <p> pengganti. */
 function replaceParagraphContainingMarker(
   html: string,
   marker: string,
@@ -26,7 +23,6 @@ function replaceParagraphContainingMarker(
   const container = document.createElement("div");
   container.innerHTML = html;
 
-  // cari text node yang mengandung marker
   const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
   let textNode: Text | null = null;
   while (walker.nextNode()) {
@@ -38,12 +34,10 @@ function replaceParagraphContainingMarker(
   }
   if (!textNode) return html;
 
-  // naik ke <p> terdekat
   let el: HTMLElement | null = textNode.parentElement;
   while (el && el.tagName !== "P") el = el.parentElement;
   if (!el) return html;
 
-  // siapkan node pengganti
   const temp = document.createElement("div");
   temp.innerHTML = replacementPHtml.trim();
   const newP = temp.firstElementChild;
@@ -58,7 +52,6 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
   const hiddenDoc = useRef<HTMLInputElement>(null);
   const syncingRef = useRef(false);
 
-  // ====== handlers upload ======
   async function handleFilesToImage(files: File[] | FileList) {
     const imgs = Array.from(files).filter((f) => f.type.startsWith("image/"));
     for (const file of imgs) {
@@ -74,7 +67,6 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
       const marker = makeMarker(id);
       const pretty = file.name;
 
-      // 1) sisipkan placeholder (sekali)
       editor
         ?.chain()
         .focus()
@@ -82,12 +74,10 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
         .run();
 
       try {
-        // 2) upload
         const { url, name } = await uploadFileToSupabase(file);
 
-        // 3) REPLACE 1 paragraf yang mengandung marker → link final
         const html = editor!.getHTML();
-        const replacement = `<p><a href="${url}" target="_blank" rel="noopener">📎 ${name}</a></p>`;
+        const replacement = `<p><a data-vd-file="1" href="${url}" target="_blank" rel="noopener">📎 ${name}</a></p>`;
         const next = replaceParagraphContainingMarker(
           html,
           marker,
@@ -168,7 +158,6 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
     },
   });
 
-  // sinkronkan konten saat ganti dokumen
   useEffect(() => {
     if (!editor) return;
     const current = editor.getHTML();
@@ -180,7 +169,6 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
     }
   }, [initialHTML, editor]);
 
-  // ===== pickers =====
   function insertImageFromPicker() {
     const input = hiddenImage.current;
     if (!input) return;
@@ -190,7 +178,7 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
   async function onPickedImages(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files && e.target.files.length) {
       await handleFilesToImage(e.target.files);
-      e.currentTarget.value = ""; // reset
+      e.currentTarget.value = "";
     }
   }
 
@@ -206,7 +194,7 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
       try {
         await handleFilesToDocs(files);
       } finally {
-        e.currentTarget.value = ""; // reset
+        e.currentTarget.value = "";
       }
     }
   }
@@ -274,7 +262,6 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
           📎 File
         </button>
 
-        {/* hidden inputs */}
         <input
           ref={hiddenImage}
           type="file"

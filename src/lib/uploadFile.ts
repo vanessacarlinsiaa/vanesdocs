@@ -5,7 +5,6 @@ function ext(name: string) {
   return i >= 0 ? name.slice(i + 1) : "bin";
 }
 
-// ⬅️ NAMED export (bukan default)
 export async function uploadFileToSupabase(file: File, userId?: string) {
   const folder = userId ?? "public";
   const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext(
@@ -13,7 +12,6 @@ export async function uploadFileToSupabase(file: File, userId?: string) {
   )}`;
   const path = `${folder}/${filename}`;
 
-  // ⬅️ pastikan pakai vd-files
   const { error } = await supa.storage
     .from("vd-files")
     .upload(path, file, { upsert: false });
