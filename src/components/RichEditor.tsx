@@ -1,20 +1,119 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
 import styles from "./RichEditor.module.css";
 import { uploadImageToSupabase } from "../lib/uploadImage";
+import { uploadFileToSupabase } from "../lib/uploadFile";
 
 type Props = {
   initialHTML: string;
   onChange: (html: string) => void;
 };
 
+// ===== Marker & replacer =====
+// Marker tak terlihat (U+2063) → tidak terlihat oleh user tapi bisa diketemukan.
+const ZW = "\u2063";
+const makeMarker = (id: string) => `${ZW}${id}${ZW}`;
+
+/** Ganti <p> yang mengandung marker dengan <p> pengganti. */
+function replaceParagraphContainingMarker(
+  html: string,
+  marker: string,
+  replacementPHtml: string
+) {
+  const container = document.createElement("div");
+  container.innerHTML = html;
+
+  // cari text node yang mengandung marker
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+  let textNode: Text | null = null;
+  while (walker.nextNode()) {
+    const n = walker.currentNode as Text;
+    if (n.nodeValue && n.nodeValue.includes(marker)) {
+      textNode = n;
+      break;
+    }
+  }
+  if (!textNode) return html;
+
+  // naik ke <p> terdekat
+  let el: HTMLElement | null = textNode.parentElement;
+  while (el && el.tagName !== "P") el = el.parentElement;
+  if (!el) return html;
+
+  // siapkan node pengganti
+  const temp = document.createElement("div");
+  temp.innerHTML = replacementPHtml.trim();
+  const newP = temp.firstElementChild;
+  if (!newP) return html;
+
+  el.replaceWith(newP);
+  return container.innerHTML;
+}
+
 export default function RichEditor({ initialHTML, onChange }: Props) {
-  const [slashOpen, setSlashOpen] = useState(false);
-  const hiddenFile = useRef<HTMLInputElement>(null);
+  const hiddenImage = useRef<HTMLInputElement>(null);
+  const hiddenDoc = useRef<HTMLInputElement>(null);
   const syncingRef = useRef(false);
+
+  // ====== handlers upload ======
+  async function handleFilesToImage(files: File[] | FileList) {
+    const imgs = Array.from(files).filter((f) => f.type.startsWith("image/"));
+    for (const file of imgs) {
+      const url = await uploadImageToSupabase(file);
+      editor?.chain().focus().setImage({ src: url }).run();
+    }
+  }
+
+  async function handleFilesToDocs(files: File[] | FileList) {
+    const docs = Array.from(files).filter((f) => !f.type.startsWith("image/"));
+    for (const file of docs) {
+      const id = "t-" + Math.random().toString(36).slice(2);
+      const marker = makeMarker(id);
+      const pretty = file.name;
+
+      // 1) sisipkan placeholder (sekali)
+      editor
+        ?.chain()
+        .focus()
+        .insertContent(`<p>📎 ${pretty} <em>(uploading…)</em>${marker}</p>`)
+        .run();
+
+      try {
+        // 2) upload
+        const { url, name } = await uploadFileToSupabase(file);
+
+        // 3) REPLACE 1 paragraf yang mengandung marker → link final
+        const html = editor!.getHTML();
+        const replacement = `<p><a href="${url}" target="_blank" rel="noopener">📎 ${name}</a></p>`;
+        const next = replaceParagraphContainingMarker(
+          html,
+          marker,
+          replacement
+        );
+
+        syncingRef.current = true;
+        editor!.commands.setContent(next, { emitUpdate: false });
+        Promise.resolve().then(() => (syncingRef.current = false));
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        const html = editor!.getHTML();
+        const replacement = `<p style="color:crimson">❌ Gagal upload: ${pretty} — ${msg}</p>`;
+        const next = replaceParagraphContainingMarker(
+          html,
+          marker,
+          replacement
+        );
+
+        syncingRef.current = true;
+        editor!.commands.setContent(next, { emitUpdate: false });
+        Promise.resolve().then(() => (syncingRef.current = false));
+        console.error("[upload file] error", msg);
+      }
+    }
+  }
 
   const editor = useEditor({
     extensions: [
@@ -25,7 +124,7 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
       }),
       Placeholder.configure({
         placeholder:
-          "Tulis dokumen di sini… Ketik '/' untuk perintah (H1, bullet, image)…",
+          "Tulis dokumen di sini… Ketik '/' untuk perintah (H1, bullet, image, file)…",
       }),
     ],
     content: initialHTML || "<p></p>",
@@ -36,31 +135,40 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
     },
     editorProps: {
       attributes: { class: styles.prose },
-      handlePaste: (_view, event) => {
-        const files = event.clipboardData?.files;
+      handlePaste: (_v, e) => {
+        const files = e.clipboardData?.files;
         if (!files || !files.length) return false;
-        const images = Array.from(files).filter((f) =>
+        const imgs = Array.from(files).filter((f) =>
           f.type.startsWith("image/")
         );
-        if (!images.length) return false;
-        event.preventDefault();
-        void handleFilesToImage(images);
+        const docs = Array.from(files).filter(
+          (f) => !f.type.startsWith("image/")
+        );
+        if (!imgs.length && !docs.length) return false;
+        e.preventDefault();
+        if (imgs.length) void handleFilesToImage(imgs);
+        if (docs.length) void handleFilesToDocs(docs);
         return true;
       },
-      handleDrop: (_view, event) => {
-        const files = event.dataTransfer?.files;
+      handleDrop: (_v, e) => {
+        const files = e.dataTransfer?.files;
         if (!files || !files.length) return false;
-        const images = Array.from(files).filter((f) =>
+        const imgs = Array.from(files).filter((f) =>
           f.type.startsWith("image/")
         );
-        if (!images.length) return false;
-        event.preventDefault();
-        void handleFilesToImage(images);
+        const docs = Array.from(files).filter(
+          (f) => !f.type.startsWith("image/")
+        );
+        if (!imgs.length && !docs.length) return false;
+        e.preventDefault();
+        if (imgs.length) void handleFilesToImage(imgs);
+        if (docs.length) void handleFilesToDocs(docs);
         return true;
       },
     },
   });
 
+  // sinkronkan konten saat ganti dokumen
   useEffect(() => {
     if (!editor) return;
     const current = editor.getHTML();
@@ -68,38 +176,39 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
     if (incoming !== current) {
       syncingRef.current = true;
       editor.commands.setContent(incoming, { emitUpdate: false });
-      Promise.resolve().then(() => {
-        syncingRef.current = false;
-      });
+      Promise.resolve().then(() => (syncingRef.current = false));
     }
   }, [initialHTML, editor]);
 
-  async function handleFilesToImage(files: File[] | FileList) {
-    const imgs = Array.from(files).filter((f) => f.type.startsWith("image/"));
-    for (const file of imgs) {
-      const url = await uploadImageToSupabase(file);
-      editor?.chain().focus().setImage({ src: url }).run();
-    }
-  }
-
+  // ===== pickers =====
   function insertImageFromPicker() {
-    const input = hiddenFile.current;
+    const input = hiddenImage.current;
     if (!input) return;
     input.value = "";
     input.click();
   }
-
-  async function onPickedFiles(e: React.ChangeEvent<HTMLInputElement>) {
+  async function onPickedImages(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files && e.target.files.length) {
       await handleFilesToImage(e.target.files);
-      setSlashOpen(false);
+      e.currentTarget.value = ""; // reset
     }
   }
 
-  function runThenClose(fn: () => void) {
-    fn();
-    setSlashOpen(false);
-    editor?.chain().focus().run();
+  function insertDocFromPicker() {
+    const input = hiddenDoc.current;
+    if (!input) return;
+    input.value = "";
+    input.click();
+  }
+  async function onPickedDocs(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (files && files.length) {
+      try {
+        await handleFilesToDocs(files);
+      } finally {
+        e.currentTarget.value = ""; // reset
+      }
+    }
   }
 
   return (
@@ -161,77 +270,31 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
         <button onClick={insertImageFromPicker} type="button">
           🖼️ Image
         </button>
+        <button onClick={insertDocFromPicker} type="button">
+          📎 File
+        </button>
+
+        {/* hidden inputs */}
         <input
-          ref={hiddenFile}
+          ref={hiddenImage}
           type="file"
           accept="image/*"
           multiple
           style={{ display: "none" }}
-          onChange={onPickedFiles}
+          onChange={onPickedImages}
+        />
+        <input
+          ref={hiddenDoc}
+          type="file"
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt,.md"
+          multiple
+          style={{ display: "none" }}
+          onChange={onPickedDocs}
         />
       </div>
 
       <div className={styles.editorBox}>
         <EditorContent editor={editor} />
-
-        {slashOpen && (
-          <div
-            className={styles.slashMenu}
-            onMouseLeave={() => setSlashOpen(false)}
-          >
-            <div
-              className={styles.item}
-              onClick={() =>
-                runThenClose(() => editor?.chain().focus().setParagraph().run())
-              }
-            >
-              Paragraph
-            </div>
-            <div
-              className={styles.item}
-              onClick={() =>
-                runThenClose(() =>
-                  editor?.chain().focus().setHeading({ level: 1 }).run()
-                )
-              }
-            >
-              H1
-            </div>
-            <div
-              className={styles.item}
-              onClick={() =>
-                runThenClose(() =>
-                  editor?.chain().focus().setHeading({ level: 2 }).run()
-                )
-              }
-            >
-              H2
-            </div>
-            <div
-              className={styles.item}
-              onClick={() =>
-                runThenClose(() =>
-                  editor?.chain().focus().toggleBulletList().run()
-                )
-              }
-            >
-              Bullet List
-            </div>
-            <div
-              className={styles.item}
-              onClick={() =>
-                runThenClose(() =>
-                  editor?.chain().focus().toggleOrderedList().run()
-                )
-              }
-            >
-              Numbered List
-            </div>
-            <div className={styles.item} onClick={insertImageFromPicker}>
-              Insert Image…
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

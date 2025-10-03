@@ -1,4 +1,3 @@
-// src/lib/uploadImage.ts
 import { supa } from "./supa";
 
 function getExt(file: File) {
@@ -13,9 +12,9 @@ export async function uploadImageToSupabase(file: File, userId?: string) {
     .slice(2)}.${getExt(file)}`;
   const path = `${folder}/${filename}`;
 
-  const { error } = await supa.storage.from("vd-images").upload(path, file, {
-    upsert: false,
-  });
+  const { error } = await supa.storage
+    .from("vd-images")
+    .upload(path, file, { upsert: false });
   if (error) throw error;
 
   const { data } = supa.storage.from("vd-images").getPublicUrl(path);
