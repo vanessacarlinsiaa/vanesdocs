@@ -107,7 +107,7 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
 
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
+      StarterKit.configure({ heading: { levels: [1, 2, 3, 4, 5] } }),
       Image.configure({
         inline: false,
         HTMLAttributes: { style: "max-width:100%;height:auto;" },
@@ -254,6 +254,33 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
           type="button"
         >
           H2
+        </button>
+        <button
+          onClick={() => editor?.chain().focus().setHeading({ level: 3 }).run()}
+          className={
+            editor?.isActive("heading", { level: 3 }) ? styles.active : ""
+          }
+          type="button"
+        >
+          H3
+        </button>
+        <button
+          onClick={() => editor?.chain().focus().setHeading({ level: 4 }).run()}
+          className={
+            editor?.isActive("heading", { level: 4 }) ? styles.active : ""
+          }
+          type="button"
+        >
+          H4
+        </button>
+        <button
+          onClick={() => editor?.chain().focus().setHeading({ level: 5 }).run()}
+          className={
+            editor?.isActive("heading", { level: 5 }) ? styles.active : ""
+          }
+          type="button"
+        >
+          H5
         </button>
         <button onClick={insertImageFromPicker} type="button">
           🖼️ Image
