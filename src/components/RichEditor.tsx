@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
@@ -11,6 +11,7 @@ type Props = {
   initialHTML: string;
   onChange: (html: string) => void;
 };
+type HeadingLevel = 1 | 2 | 3 | 4 | 5;
 
 const ZW = "\u2063";
 const makeMarker = (id: string) => `${ZW}${id}${ZW}`;
@@ -51,6 +52,27 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
   const hiddenImage = useRef<HTMLInputElement>(null);
   const hiddenDoc = useRef<HTMLInputElement>(null);
   const syncingRef = useRef(false);
+  const [openHeading, setOpenHeading] = useState(false);
+  const headingRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onDocClick(e: MouseEvent) {
+      if (!headingRef.current) return;
+      if (!headingRef.current.contains(e.target as Node)) {
+        setOpenHeading(false);
+      }
+    }
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
+
+  function pickHeading(level: number | "paragraph") {
+    if (!editor) return;
+    const chain = editor.chain().focus();
+    if (level === "paragraph") chain.setParagraph().run();
+    else chain.setHeading({ level: level as HeadingLevel }).run();
+    setOpenHeading(false);
+  }
 
   async function handleFilesToImage(files: File[] | FileList) {
     const imgs = Array.from(files).filter((f) => f.type.startsWith("image/"));
@@ -202,6 +224,7 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
   return (
     <div className={styles.wrapper}>
       <div className={styles.toolbar}>
+        {/* BUILD TAG: dropdown-heading v3 */}
         <button
           onClick={() => editor?.chain().focus().toggleBold().run()}
           className={editor?.isActive("bold") ? styles.active : ""}
@@ -237,7 +260,7 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
         >
           {"< >"}
         </button>
-        <button
+        {/* <button
           onClick={() => editor?.chain().focus().setHeading({ level: 1 }).run()}
           className={
             editor?.isActive("heading", { level: 1 }) ? styles.active : ""
@@ -281,7 +304,48 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
           type="button"
         >
           H5
-        </button>
+        </button> */}
+        <div className={styles.dropdown} ref={headingRef}>
+          <button
+            onClick={() => setOpenHeading((v) => !v)}
+            type="button"
+            className={styles.dropdownTrigger}
+            aria-haspopup="menu"
+            aria-expanded={openHeading}
+            title="Heading"
+          >
+            Heading ▾
+          </button>
+          {openHeading && (
+            <div className={`${styles.menu} ${styles.menuLeft}`} role="menu">
+              <button
+                className={`${styles.menuItem} ${
+                  editor?.isActive("paragraph") ? styles.active : ""
+                }`}
+                onClick={() => pickHeading("paragraph")}
+                role="menuitem"
+                type="button"
+              >
+                Normal (Paragraph)
+              </button>
+              {([1, 2, 3, 4, 5] as const).map((lvl) => (
+                <button
+                  key={lvl}
+                  className={`${styles.menuItem} ${
+                    editor?.isActive("heading", { level: lvl })
+                      ? styles.active
+                      : ""
+                  }`}
+                  onClick={() => pickHeading(lvl)}
+                  role="menuitem"
+                  type="button"
+                >
+                  H{lvl}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <button onClick={insertImageFromPicker} type="button">
           🖼️ Image
         </button>

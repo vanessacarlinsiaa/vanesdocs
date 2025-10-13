@@ -41,23 +41,6 @@
 .prose p {
   margin: 8px 0;
 }
-.prose h1 {
-  font-size: 1.6rem;
-  margin: 14px 0 8px;
-}
-.prose h2 {
-  font-size: 1.3rem;
-  margin: 12px 0 6px;
-}
-.prose h3 {
-  font-size: 1.1rem;
-  margin: 10px 0 6px;
-}
-.prose h4 {
-  font-size: 1rem;
-  margin: 8px 0 4px;
-  font-weight: 600;
-}
 
 .prose ul,
 .prose ol {
@@ -93,4 +76,87 @@
 }
 .prose [data-temp] {
   opacity: 0.7;
+}
+
+/* Dropdown wrapper */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Tombol trigger dropdown biar seragam dengan tombol toolbar */
+.dropdownTrigger {
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.dropdownTrigger:hover {
+  background: #f2f2f2;
+}
+
+/* Menu yang muncul ke arah kiri (diratakan ke kanan tombol) */
+/* Dropdown menu pas lebarnya dengan tombol trigger */
+.menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+
+  /* KUNCI PERUBAHAN: */
+  width: 100%; /* ikuti lebar .dropdown (sama dgn tombol) */
+  min-width: 120px; /* override min-width lama */
+  /* sebelumnya ada: min-width: 160px; hapus/override ini */
+
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  padding: 6px;
+  z-index: 5;
+}
+
+.menuLeft {
+  right: 0;
+}
+
+.menuItem {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 6px 8px; 
+  border: 0;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+  white-space: normal; 
+  font-size: 10px;
+}
+
+.menuItem:hover {
+  background: #f5f5f5;
+}
+
+.prose h1 {
+  font-size: 1.6rem;
+  margin: 14px 0 8px;
+}
+.prose h2 {
+  font-size: 1.3rem;
+  margin: 12px 0 6px;
+}
+.prose h3 {
+  font-size: 1.1rem;
+  margin: 10px 0 6px;
+}
+.prose h4 {
+  font-size: 1rem;
+  margin: 8px 0 4px;
+  font-weight: 600;
+}
+.prose h5 {
+  font-size: 0.95rem;
+  margin: 6px 0 4px;
+  font-weight: 600;
 }
