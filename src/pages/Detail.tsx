@@ -19,7 +19,7 @@ import json from "highlight.js/lib/languages/json";
 import css from "highlight.js/lib/languages/css";
 import xml from "highlight.js/lib/languages/xml";
 import sql from "highlight.js/lib/languages/sql";
-import "highlight.js/styles/github.css"; // tema light, sama seperti editor
+import "highlight.js/styles/github.css";
 
 let HLJS_READY = false;
 function ensureHLJS() {
@@ -38,7 +38,6 @@ function ensureHLJS() {
   hljs.registerLanguage("sql", sql);
   HLJS_READY = true;
 }
-/* ===================================== */
 
 function isFileLink(el: HTMLAnchorElement) {
   if (el.dataset.vdFile === "1") return true;
@@ -141,10 +140,8 @@ export default function Detail() {
       const code = pre.querySelector("code");
       if (!code) return;
 
-      // Pastikan ada data-language di <pre>
       let lang = pre.getAttribute("data-language");
 
-      // Fallback untuk dokumen lama: baca dari class "language-xxx"
       if (!lang) {
         const m = (code.className || "").match(/language-([\w+-]+)/i);
         if (m) {
@@ -153,7 +150,6 @@ export default function Detail() {
         }
       }
 
-      // Pastikan <code> punya class language-<lang> agar tema aktif
       if (lang && !code.classList.contains(`language-${lang}`)) {
         code.classList.add(`language-${lang}`);
       }
@@ -161,7 +157,6 @@ export default function Detail() {
       hljs.highlightElement(code as HTMLElement);
     });
   }, [doc]);
-  /* ======================================== */
 
   if (loading) {
     return (
@@ -220,7 +215,6 @@ export default function Detail() {
           {new Date(doc.updated_at).toLocaleDateString()}
         </div>
 
-        {/* Lock gate */}
         {doc.locked && !unlocked ? (
           <div style={{ marginTop: 20 }}>
             <h2>🔒 This document is locked</h2>

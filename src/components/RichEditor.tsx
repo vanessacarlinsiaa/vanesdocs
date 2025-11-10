@@ -8,7 +8,6 @@ import styles from "./RichEditor.module.css";
 import { uploadImageToSupabase } from "../lib/uploadImage";
 import { uploadFileToSupabase } from "../lib/uploadFile";
 
-// tema light untuk syntax highlight
 import "highlight.js/styles/github.css";
 
 type Props = {
@@ -135,7 +134,7 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3, 4, 5] },
-        codeBlock: false, // kita ganti dengan nodeview custom
+        codeBlock: false,
       }),
       CodeBlockWithHeader,
       Image.configure({

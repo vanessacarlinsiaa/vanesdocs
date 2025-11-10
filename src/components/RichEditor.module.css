@@ -1,8 +1,9 @@
 .wrapper {
   border: 1px solid #e6e6e6;
   border-radius: 12px;
-  overflow: hidden;
+  overflow: visible;
   background: #fff;
+  position: relative;
 }
 .toolbar {
   display: flex;
@@ -155,24 +156,35 @@
   font-weight: 600;
 }
 
-/* ====== Code block – abu-abu & kotak ====== */
 .codeBlockWrap {
-  border: 1px solid #e5e7eb; /* abu terang */
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
-  background: #f7f8fa; /* abu muda */
-  overflow: hidden;
-  margin: 12px 0;
+  background: #f7f8fa;
+  overflow: visible;
+  position: relative;
+  z-index: 1;
+}
+.codeBlockWrapOpen {
+  z-index: 9999;
 }
 
 .codeHeader {
   position: relative;
+  z-index: 3;
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: 0.5rem;
   padding: 8px 10px;
-  background: #f3f4f6; /* strip header abu */
+  background: #f3f4f6;
   border-bottom: 1px solid #e5e7eb;
+}
+
+.codeLeft {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .codeBadge {
@@ -181,12 +193,12 @@
   padding: 2px 8px;
   border-radius: 999px;
   border: 1px solid #e5e7eb;
-  background: #ffffff;
+  background: #fff;
   color: #374151;
 }
 
 .langTrigger {
-  background: #ffffff;
+  background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 4px 10px;
@@ -201,14 +213,21 @@
 .langMenu {
   position: absolute;
   top: calc(100% + 6px);
-  left: 84px; /* muncul dekat badge */
-  background: #ffffff;
+  background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   padding: 6px;
-  z-index: 10;
+  z-index: 10000;
+  max-height: min(320px, calc(100vh - 200px));
+  overflow-y: auto;
+  min-width: 180px;
 }
+.langMenuDropUp {
+  top: auto;
+  bottom: calc(100% + 6px);
+}
+
 .langItem {
   display: block;
   width: 100%;
@@ -226,9 +245,10 @@
   background: #f3f4f6;
 }
 
-/* area code */
 .codePre {
-  background: #f7f8fa; /* abu */
+  position: relative;
+  z-index: 1;
+  background: #f7f8fa;
   color: #111827;
   padding: 14px 16px;
   overflow-x: auto;
@@ -239,7 +259,6 @@
   line-height: 1.55;
 }
 
-/* jangan pakai label ::before di editor (kita punya header beneran) */
 .codePre[data-language]::before {
   display: none;
   content: "";
