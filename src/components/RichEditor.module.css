@@ -78,13 +78,11 @@
   opacity: 0.7;
 }
 
-/* Dropdown wrapper */
 .dropdown {
   position: relative;
   display: inline-block;
 }
 
-/* Tombol trigger dropdown biar seragam dengan tombol toolbar */
 .dropdownTrigger {
   padding: 6px 10px;
   border: 1px solid #ddd;
@@ -96,17 +94,13 @@
   background: #f2f2f2;
 }
 
-/* Menu yang muncul ke arah kiri (diratakan ke kanan tombol) */
-/* Dropdown menu pas lebarnya dengan tombol trigger */
 .menu {
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
 
-  /* KUNCI PERUBAHAN: */
-  width: 100%; /* ikuti lebar .dropdown (sama dgn tombol) */
-  min-width: 120px; /* override min-width lama */
-  /* sebelumnya ada: min-width: 160px; hapus/override ini */
+  width: 100%;
+  min-width: 120px;
 
   background: #fff;
   border: 1px solid #ddd;
@@ -124,13 +118,13 @@
   display: block;
   width: 100%;
   text-align: left;
-  padding: 6px 8px; 
+  padding: 6px 8px;
   border: 0;
   background: transparent;
   border-radius: 8px;
   cursor: pointer;
   font: inherit;
-  white-space: normal; 
+  white-space: normal;
   font-size: 10px;
 }
 
@@ -159,4 +153,94 @@
   font-size: 0.95rem;
   margin: 6px 0 4px;
   font-weight: 600;
+}
+
+/* ====== Code block – abu-abu & kotak ====== */
+.codeBlockWrap {
+  border: 1px solid #e5e7eb; /* abu terang */
+  border-radius: 12px;
+  background: #f7f8fa; /* abu muda */
+  overflow: hidden;
+  margin: 12px 0;
+}
+
+.codeHeader {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  padding: 8px 10px;
+  background: #f3f4f6; /* strip header abu */
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.codeBadge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #374151;
+}
+
+.langTrigger {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 13px;
+  color: #111827;
+  cursor: pointer;
+}
+.langTrigger:hover {
+  background: #f3f4f6;
+}
+
+.langMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 84px; /* muncul dekat badge */
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  padding: 6px;
+  z-index: 10;
+}
+.langItem {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: #111827;
+  margin: 4px 0;
+  cursor: pointer;
+}
+.langItem:hover {
+  background: #f3f4f6;
+}
+
+/* area code */
+.codePre {
+  background: #f7f8fa; /* abu */
+  color: #111827;
+  padding: 14px 16px;
+  overflow-x: auto;
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", monospace;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+/* jangan pakai label ::before di editor (kita punya header beneran) */
+.codePre[data-language]::before {
+  display: none;
+  content: "";
 }

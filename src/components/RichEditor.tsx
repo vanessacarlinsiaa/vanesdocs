@@ -3,9 +3,13 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
+import CodeBlockWithHeader from "../editor/CodeBlockWithHeader";
 import styles from "./RichEditor.module.css";
 import { uploadImageToSupabase } from "../lib/uploadImage";
 import { uploadFileToSupabase } from "../lib/uploadFile";
+
+// tema light untuk syntax highlight
+import "highlight.js/styles/github.css";
 
 type Props = {
   initialHTML: string;
@@ -129,7 +133,11 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
 
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({ heading: { levels: [1, 2, 3, 4, 5] } }),
+      StarterKit.configure({
+        heading: { levels: [1, 2, 3, 4, 5] },
+        codeBlock: false, // kita ganti dengan nodeview custom
+      }),
+      CodeBlockWithHeader,
       Image.configure({
         inline: false,
         HTMLAttributes: { style: "max-width:100%;height:auto;" },
@@ -224,7 +232,7 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
   return (
     <div className={styles.wrapper}>
       <div className={styles.toolbar}>
-        {/* BUILD TAG: dropdown-heading v3 */}
+        {/* Inline styles */}
         <button
           onClick={() => editor?.chain().focus().toggleBold().run()}
           className={editor?.isActive("bold") ? styles.active : ""}
@@ -239,6 +247,8 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
         >
           <i>I</i>
         </button>
+
+        {/* Lists */}
         <button
           onClick={() => editor?.chain().focus().toggleBulletList().run()}
           className={editor?.isActive("bulletList") ? styles.active : ""}
@@ -253,58 +263,18 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
         >
           1. List
         </button>
+
+        {/* Code block toggle */}
         <button
           onClick={() => editor?.chain().focus().toggleCodeBlock().run()}
           className={editor?.isActive("codeBlock") ? styles.active : ""}
           type="button"
+          title="Insert Code Block"
         >
           {"< >"}
         </button>
-        {/* <button
-          onClick={() => editor?.chain().focus().setHeading({ level: 1 }).run()}
-          className={
-            editor?.isActive("heading", { level: 1 }) ? styles.active : ""
-          }
-          type="button"
-        >
-          H1
-        </button>
-        <button
-          onClick={() => editor?.chain().focus().setHeading({ level: 2 }).run()}
-          className={
-            editor?.isActive("heading", { level: 2 }) ? styles.active : ""
-          }
-          type="button"
-        >
-          H2
-        </button>
-        <button
-          onClick={() => editor?.chain().focus().setHeading({ level: 3 }).run()}
-          className={
-            editor?.isActive("heading", { level: 3 }) ? styles.active : ""
-          }
-          type="button"
-        >
-          H3
-        </button>
-        <button
-          onClick={() => editor?.chain().focus().setHeading({ level: 4 }).run()}
-          className={
-            editor?.isActive("heading", { level: 4 }) ? styles.active : ""
-          }
-          type="button"
-        >
-          H4
-        </button>
-        <button
-          onClick={() => editor?.chain().focus().setHeading({ level: 5 }).run()}
-          className={
-            editor?.isActive("heading", { level: 5 }) ? styles.active : ""
-          }
-          type="button"
-        >
-          H5
-        </button> */}
+
+        {/* Heading dropdown */}
         <div className={styles.dropdown} ref={headingRef}>
           <button
             onClick={() => setOpenHeading((v) => !v)}
@@ -346,6 +316,8 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
             </div>
           )}
         </div>
+
+        {/* Insert image / file */}
         <button onClick={insertImageFromPicker} type="button">
           🖼️ Image
         </button>
@@ -353,6 +325,7 @@ export default function RichEditor({ initialHTML, onChange }: Props) {
           📎 File
         </button>
 
+        {/* NOTE: tidak ada dropdown language/copy di header */}
         <input
           ref={hiddenImage}
           type="file"
