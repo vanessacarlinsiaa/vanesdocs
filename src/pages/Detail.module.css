@@ -93,17 +93,15 @@
   color: #444;
 }
 
-/* Kotak code (viewer) */
 .content pre {
   position: relative;
   background: #f7f8fa;
-  border: 1px solid #e6e8ec; /* lebih halus */
+  border: 1px solid #e6e8ec;
   border-radius: 12px;
   overflow-x: auto;
   margin: 16px 0;
 }
 
-/* Header strip di dalam kotak (tanpa border keliling) */
 .content pre[data-language]::before {
   content: "CODE  •  " attr(data-language);
   position: absolute;
@@ -116,7 +114,7 @@
   gap: 8px;
   padding: 0 12px;
   background: #f3f4f6;
-  border-bottom: 1px solid #e6e8ec; /* hanya separator */
+  border-bottom: 1px solid #e6e8ec;
   border-top-left-radius: 12px;
   border-top-right-radius: 12px;
   color: #374151;
@@ -124,7 +122,6 @@
   font-weight: 700;
 }
 
-/* monospace */
 .content pre code,
 .content code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,

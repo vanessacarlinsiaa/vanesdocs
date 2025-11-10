@@ -1,4 +1,3 @@
-// src/editor/CodeBlockWithHeader.tsx
 import { useEffect, useRef, useState } from "react";
 import {
   ReactNodeViewRenderer,
@@ -30,7 +29,43 @@ function CodeBlockComponent(props: NodeViewProps) {
     (props.node?.attrs as { language?: string })?.language || "plaintext";
 
   const [open, setOpen] = useState(false);
+  const [dropUp, setDropUp] = useState(false);
+  const [menuLeft, setMenuLeft] = useState(0);
   const menuRef = useClickOutside<HTMLDivElement>(() => setOpen(false));
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  const recomputeMenuPos = () => {
+    if (!triggerRef.current || !headerRef.current) return;
+    const t = triggerRef.current.getBoundingClientRect();
+    const h = headerRef.current.getBoundingClientRect();
+
+    setMenuLeft(t.left - h.left);
+
+    const spaceBelow = window.innerHeight - t.bottom;
+    const estimatedMenu = 280;
+    setDropUp(spaceBelow < estimatedMenu);
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    recomputeMenuPos();
+    const onReflow = () => recomputeMenuPos();
+    window.addEventListener("resize", onReflow);
+    window.addEventListener("scroll", onReflow, true);
+    return () => {
+      window.removeEventListener("resize", onReflow);
+      window.removeEventListener("scroll", onReflow, true);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const setLanguage = (value: string) => {
     props.updateAttributes({ language: value });
@@ -38,14 +73,18 @@ function CodeBlockComponent(props: NodeViewProps) {
     setOpen(false);
   };
 
+  const wrapClass = `${styles.codeBlockWrap} ${
+    open ? styles.codeBlockWrapOpen : ""
+  }`;
+
   return (
-    <NodeViewWrapper className={styles.codeBlockWrap}>
-      <div className={styles.codeHeader}>
+    <NodeViewWrapper className={wrapClass}>
+      <div className={styles.codeHeader} ref={headerRef}>
         <div className={styles.codeLeft} ref={menuRef}>
           <span className={styles.codeBadge}>CODE</span>
 
-          {/* Dropdown Button */}
           <button
+            ref={triggerRef}
             type="button"
             className={styles.langTrigger}
             onClick={() => setOpen((v) => !v)}
@@ -57,7 +96,13 @@ function CodeBlockComponent(props: NodeViewProps) {
           </button>
 
           {open && (
-            <div role="menu" className={styles.langMenu}>
+            <div
+              role="menu"
+              className={`${styles.langMenu} ${
+                dropUp ? styles.langMenuDropUp : ""
+              }`}
+              style={{ left: menuLeft }}
+            >
               <button
                 role="menuitem"
                 className={styles.langItem}
@@ -82,7 +127,6 @@ function CodeBlockComponent(props: NodeViewProps) {
         </div>
       </div>
 
-      {/* NOTE: NodeViewContent harus "div" (default). Jangan pakai as="code". */}
       <pre className={styles.codePre} data-language={lang}>
         <NodeViewContent />
       </pre>
@@ -94,7 +138,6 @@ const CodeBlockWithHeader = CodeBlockLowlight.configure({
   lowlight,
   defaultLanguage: "plaintext",
 }).extend({
-  // Simpan bahasa ke HTML agar viewer bisa styling & highlight
   addAttributes() {
     return {
       language: {
@@ -105,7 +148,6 @@ const CodeBlockWithHeader = CodeBlockLowlight.configure({
       },
     };
   },
-
   addNodeView() {
     return ReactNodeViewRenderer(CodeBlockComponent);
   },
