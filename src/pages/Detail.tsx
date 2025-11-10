@@ -1,10 +1,44 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getDocDb, deleteDocDb, type DocRow } from "../lib/docsRepo";
 import styles from "./Detail.module.css";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import AuthOnly from "../components/AuthOnly";
 import { sha256 } from "../lib/hash";
 import FilePreviewModal from "../components/FilePreviewModal";
+
+/* ===== Highlight.js untuk viewer ===== */
+import hljs from "highlight.js/lib/core";
+import javascript from "highlight.js/lib/languages/javascript";
+import typescript from "highlight.js/lib/languages/typescript";
+import python from "highlight.js/lib/languages/python";
+import java from "highlight.js/lib/languages/java";
+import c from "highlight.js/lib/languages/c";
+import cpp from "highlight.js/lib/languages/cpp";
+import go from "highlight.js/lib/languages/go";
+import json from "highlight.js/lib/languages/json";
+import css from "highlight.js/lib/languages/css";
+import xml from "highlight.js/lib/languages/xml";
+import sql from "highlight.js/lib/languages/sql";
+import "highlight.js/styles/github.css"; // tema light, sama seperti editor
+
+let HLJS_READY = false;
+function ensureHLJS() {
+  if (HLJS_READY) return;
+  hljs.registerLanguage("javascript", javascript);
+  hljs.registerLanguage("typescript", typescript);
+  hljs.registerLanguage("python", python);
+  hljs.registerLanguage("java", java);
+  hljs.registerLanguage("c", c);
+  hljs.registerLanguage("cpp", cpp);
+  hljs.registerLanguage("go", go);
+  hljs.registerLanguage("json", json);
+  hljs.registerLanguage("css", css);
+  hljs.registerLanguage("html", xml);
+  hljs.registerLanguage("xml", xml);
+  hljs.registerLanguage("sql", sql);
+  HLJS_READY = true;
+}
+/* ===================================== */
 
 function isFileLink(el: HTMLAnchorElement) {
   if (el.dataset.vdFile === "1") return true;
@@ -26,15 +60,17 @@ export default function Detail() {
   const [tryPass, setTryPass] = useState("");
   const [unlockErr, setUnlockErr] = useState<string | null>(null);
 
-  const isUnlocked = (id: string) =>
-    sessionStorage.getItem(`unlock:${id}`) === "1";
-  const markUnlocked = (id: string) =>
-    sessionStorage.setItem(`unlock:${id}`, "1");
+  const isUnlocked = (docId: string) =>
+    sessionStorage.getItem(`unlock:${docId}`) === "1";
+  const markUnlocked = (docId: string) =>
+    sessionStorage.setItem(`unlock:${docId}`, "1");
 
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewName, setPreviewName] = useState<string | null>(null);
   const [previewMime, setPreviewMime] = useState<string | null>(null);
+
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -92,6 +128,40 @@ export default function Detail() {
     setPreviewMime(null);
     setPreviewOpen(true);
   }, []);
+
+  /* ===== Highlight konten saat tampil ===== */
+  useEffect(() => {
+    if (!doc || !contentRef.current) return;
+    ensureHLJS();
+
+    const container = contentRef.current;
+    const pres = container.querySelectorAll("pre");
+
+    pres.forEach((pre) => {
+      const code = pre.querySelector("code");
+      if (!code) return;
+
+      // Pastikan ada data-language di <pre>
+      let lang = pre.getAttribute("data-language");
+
+      // Fallback untuk dokumen lama: baca dari class "language-xxx"
+      if (!lang) {
+        const m = (code.className || "").match(/language-([\w+-]+)/i);
+        if (m) {
+          lang = m[1].toLowerCase();
+          pre.setAttribute("data-language", lang);
+        }
+      }
+
+      // Pastikan <code> punya class language-<lang> agar tema aktif
+      if (lang && !code.classList.contains(`language-${lang}`)) {
+        code.classList.add(`language-${lang}`);
+      }
+
+      hljs.highlightElement(code as HTMLElement);
+    });
+  }, [doc]);
+  /* ======================================== */
 
   if (loading) {
     return (
@@ -179,6 +249,7 @@ export default function Detail() {
         ) : (
           <>
             <div
+              ref={contentRef}
               className={styles.content}
               style={{ lineHeight: 1.7, marginTop: 16 }}
               onClick={onClickContent}

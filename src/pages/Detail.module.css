@@ -93,6 +93,46 @@
   color: #444;
 }
 
+/* Kotak code (viewer) */
+.content pre {
+  position: relative;
+  background: #f7f8fa;
+  border: 1px solid #e6e8ec; /* lebih halus */
+  border-radius: 12px;
+  overflow-x: auto;
+  margin: 16px 0;
+}
+
+/* Header strip di dalam kotak (tanpa border keliling) */
+.content pre[data-language]::before {
+  content: "CODE  •  " attr(data-language);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  background: #f3f4f6;
+  border-bottom: 1px solid #e6e8ec; /* hanya separator */
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  color: #374151;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* monospace */
+.content pre code,
+.content code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", monospace;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
 @media (max-width: 640px) {
   .paper {
     padding: 16px;

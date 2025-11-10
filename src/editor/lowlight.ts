@@ -1,4 +1,4 @@
-import { lowlight } from "lowlight/lib/core";
+import { createLowlight } from "lowlight";
 
 import javascript from "highlight.js/lib/languages/javascript";
 import typescript from "highlight.js/lib/languages/typescript";
@@ -11,6 +11,8 @@ import json from "highlight.js/lib/languages/json";
 import css from "highlight.js/lib/languages/css";
 import xml from "highlight.js/lib/languages/xml";
 import sql from "highlight.js/lib/languages/sql";
+
+const lowlight = createLowlight();
 
 lowlight.register("javascript", javascript);
 lowlight.register("js", javascript);
