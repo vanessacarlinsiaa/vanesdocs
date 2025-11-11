@@ -55,5 +55,79 @@ git clone https://github.com/vanessacarlinsiaa/vanesdocs.git
 cd vanesdocs
 npm install
 npm run dev
+```
 Then open your browser and visit:
-👉 http://localhost:5173
+👉 http://localhost:5173 
+
+---
+
+## 📁 Project Structure
+  ```bash
+src/
+ ├─ components/         # UI components (Footer, Header, EditorWrapper, etc.)
+ ├─ editor/             # TipTap + Lowlight custom node extensions
+ ├─ pages/              # Page components (Home, Preview, etc.)
+ ├─ styles/             # CSS Modules for styling
+ ├─ assets/             # Static resources (images, icons, etc.)
+ └─ main.tsx            # Entry point
+```
+---
+
+## 📸 Screenshots
+
+### 🏠 Home Page
+| Logged In | Not Logged In |
+|------------|---------------|
+| ![Login Home](https://raw.githubusercontent.com/vanessacarlinsiaa/vanesdocs/main/src/assets/LoginPreview.jpg) | ![Guest Home](https://raw.githubusercontent.com/vanessacarlinsiaa/vanesdocs/main/src/assets/Not%20Login%20Preview.jpg) |
+
+---
+
+### 📄 Preview Page — Unlocked Document
+| Logged In | Not Logged In |
+|------------|---------------|
+| ![Login Preview](https://raw.githubusercontent.com/vanessacarlinsiaa/vanesdocs/main/src/assets/Preview%20Page%20Login.jpg) | ![Guest Preview](https://raw.githubusercontent.com/vanessacarlinsiaa/vanesdocs/main/src/assets/Preview%20Page%20Not%20login.jpg) |
+
+---
+
+### 🔒 Locked Document (Preview Page)
+| Both Views (Login & Guest) |
+|-----------------------------|
+| ![Locked Doc Preview](https://raw.githubusercontent.com/vanessacarlinsiaa/vanesdocs/main/src/assets/Locked%20Doc.jpg) |
+
+> 🪄 *All screenshots are stored locally under `src/assets/` for portfolio documentation.*
+
+---
+
+
+## 💬 Feedback & Contact
+
+This project is built for **personal and academic documentation** only.  
+Still, if you’d like to share feedback or connect, feel free to reach out 💌
+
+- 📧 **Email:** [carlinsivanessa@gmail.com](mailto:carlinsivanessa@gmail.com)  
+- 🐙 **GitHub:** [@vanessacarlinsiaa](https://github.com/vanessacarlinsiaa)
+
+---
+
+## 📜 License
+
+This repository is **private** and not intended for public redistribution.  
+All designs, implementations, and configurations are © 2025 **Vanessa Carlinsia Tjong**.  
+Please do not copy, clone, or reuse this codebase without permission.
+
+---
+
+<div align="center">
+
+### 🌷 Personal Note
+
+> “VanesDocs isn’t a public tool —  
+> it’s a personal lab where I organize, experiment, and refine my ideas.”  
+> — *Vanessa Carlinsia Tjong*
+
+---
+
+Made with ❤️ using **React + Vite + TypeScript**  
+© 2025 [Vanessa Carlinsia Tjong](https://github.com/vanessacarlinsiaa)
+
+</div>
