@@ -57,7 +57,14 @@ export default function Home() {
   if (err) return <main style={{ padding: 16 }}>Error: {err}</main>;
 
   return (
-    <main style={{ padding: "16px", maxWidth: 900, margin: "0 auto" }}>
+    <main
+      style={{
+        padding: "16px",
+        maxWidth: 900,
+        margin: "0 auto",
+        paddingBottom: 60,
+      }}
+    >
       {q ? (
         <p style={{ margin: "6px 0 12px" }}>
           Result for: <strong>{q}</strong> • {results.length} document

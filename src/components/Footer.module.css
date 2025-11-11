@@ -1,3 +1,6 @@
+body {
+  padding-bottom: 60px; /* lebih besar sedikit dari height footer */
+}
 .footer {
   position: fixed;
   bottom: 0;
